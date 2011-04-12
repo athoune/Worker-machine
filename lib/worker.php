@@ -2,19 +2,18 @@
 require 'Predis.php';
 $_REDIS = new Predis_Client();
 
-class Worker {
-	function __construct() {
-	}
-	function perform() {
-	}
-	
-}
-
+/**
+ * Fire and forget
+ */
 function async_call($function, $args) {
 	global $_REDIS;
 	$_REDIS->lpush('queue', serialize(array($function, $args)));
 }
 
+/**
+ * Async call a function with a list of arguments, and return the result
+ * It's the map part of map-reduce
+ */
 function batch($function, $largs) {
 	global $_REDIS;
 	$pid = uniqid();//[TODO] uuid later?
@@ -39,6 +38,9 @@ function batch($function, $largs) {
 	return $results;
 }
 
+/*
+ * The job is done here
+ */
 function async_work() {
 	global $_REDIS;
 	while(true) {
