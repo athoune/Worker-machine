@@ -8,6 +8,8 @@ function test($time, $text) {
 	echo "$text\n";
 }
 
-for($i=0; $i < 10; $i++) {
-	async_call('test', array(3, "Hello world $i"));
+if($argv[1] == '--async') {
+	for($i=0; $i < 10; $i++) {
+		async_call('test', array(3, "Hello world $i"));
+	}
 }
