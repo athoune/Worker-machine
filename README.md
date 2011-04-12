@@ -14,8 +14,20 @@ Launch Redis
 
 In differents terminals, launch some workers
 
-	php test.php worker
+	php test.php --worker
 
 In an other terminal, lauch the test
 
-	php test.php
+	php test.php --async
+
+---
+
+Another test, the classic map/reduce, just like Google :
+
+Launch some workers:
+
+	php test_mapreduce.php --worker
+
+And one client:
+
+	php  test_mapreduce.php --mapreduce
