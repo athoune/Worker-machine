@@ -33,9 +33,16 @@ function batch($function, $largs) {
 	$pubsub->subscribe("pid:$pid");
 	$results = array();
 	$cpt = sizeof($largs);
+	$errors = array();
 	foreach ($pubsub as $message) {
 		if($message->kind == 'message') {
-			$results[] = unserialize($message->payload);
+			$msg = unserialize($message->payload);
+			if($msg[0] == 'r') {
+				$results[] = $msg[1];
+			}
+			if($msg[0] == 'e') {
+				$errors[] = $msg[1];
+			}
 			$cpt --;
 			print $cpt;
 			if($cpt == 0) {
@@ -44,7 +51,7 @@ function batch($function, $largs) {
 		}
 	}
 	unset($pubsub);
-	return $results;
+	return array($results, $errors);
 }
 
 /*
@@ -55,11 +62,14 @@ function async_work() {
 	while(true) {
 		list($liste, $sdata) = $_REDIS->brpop('queue', 300);
 		$data = unserialize($sdata);
-		$result = call_user_func_array($data[0], $data[1]);
+		try {
+			$result = call_user_func_array($data[0], $data[1]);
+			$msg = array('r', $result);
+		} catch( Exception $e) {
+			$msg = array('e', $e);
+		}
 		if(sizeof($data) >= 3) {
-			$rresult = serialize($result);
-			$_REDIS->lpush("result:$data[2]", $rresult);
-			$_REDIS->publish("pid:$data[2]", $rresult);
+			$_REDIS->publish("pid:$data[2]", serialize($msg));
 		}
 	}
 }
