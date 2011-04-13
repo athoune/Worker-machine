@@ -2,11 +2,14 @@
 require 'lib/worker.php';
 
 function getTitle($url) {
-	echo "$url\n";
+	global $_PID;
+	global $_CONTEXT;
+	echo "$_PID: $url\n";
 	$html = file_get_contents("http://$url");
 	if($html == FALSE) {
 		throw new Exception("can't fetch url");
 	}
+	$_CONTEXT->set($url, $html);
 	preg_match('/<title>(.*)<\/title>/i', $html, $matches);
 	return $matches[1];
 }
@@ -17,5 +20,5 @@ if($argv[1] == '--mapreduce') {
 	//reduce
 	sort($titles);
 	var_dump($titles);
-	var_dump($errors);
+	//var_dump($errors);
 }

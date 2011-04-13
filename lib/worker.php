@@ -8,6 +8,29 @@ $_REDIS = new Predis_Client(
 		)
 	);
 
+class Context {
+	public $name;
+	function __construct($pid) {
+		$this->name = "context:$pid";
+	}
+	function get($key) {
+		global $_REDIS;
+		return $_REDIS->hget($this->name, $key);
+	}
+	function set($key, $value) {
+		global $_REDIS;
+		$_REDIS->hset($this->name, $key, $value);
+	}
+	function clean() {
+		global $_REDIS;
+		$_REDIS->del($this->name);
+	}
+	function dump() {
+		global $_REDIS;
+		return $_REDIS->hvals($this->name);
+	}
+}
+
 /**
  * Fire and forget
  */
@@ -29,6 +52,7 @@ function batch($function, $largs) {
 		}
 		$_REDIS->lpush('queue', serialize(array($function, $args, $pid)));
 	}
+	$context = new Context($pid);
 	$pubsub = $_REDIS->pubSubContext();
 	$pubsub->subscribe("pid:$pid");
 	$results = array();
@@ -51,6 +75,11 @@ function batch($function, $largs) {
 		}
 	}
 	unset($pubsub);
+	var_dump(array(
+		'name' => $context->name,
+		'context' => $context->dump()
+	));
+	$context->clean();
 	return array($results, $errors);
 }
 
@@ -59,15 +88,20 @@ function batch($function, $largs) {
  */
 function async_work() {
 	global $_REDIS;
+	global $_PID;
+	global $_CONTEXT;
 	while(true) {
 		list($liste, $sdata) = $_REDIS->brpop('queue', 300);
 		$data = unserialize($sdata);
+		$_PID = $data[2];
+		$_CONTEXT = new Context($_PID);
 		try {
 			$result = call_user_func_array($data[0], $data[1]);
 			$msg = array('r', $result);
 		} catch( Exception $e) {
 			$msg = array('e', $e);
 		}
+		unset($_CONTEXT);
 		if(sizeof($data) >= 3) {
 			$_REDIS->publish("pid:$data[2]", serialize($msg));
 		}
