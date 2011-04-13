@@ -1,6 +1,12 @@
 <?php
 require 'Predis.php';
-$_REDIS = new Predis_Client();
+$_REDIS = new Predis_Client(
+	array(
+		'host' => '127.0.0.1',
+		'port' => 6379,
+		'read_write_timeout' => -1
+		)
+	);
 
 /**
  * Fire and forget
