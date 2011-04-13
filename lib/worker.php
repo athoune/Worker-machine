@@ -46,6 +46,7 @@ function async_call($function, $args) {
 function batch($function, $largs) {
 	global $_REDIS;
 	$pid = uniqid();//[TODO] uuid later?
+	echo "pid: $pid\n";
 	foreach($largs as $args) {
 		if(! is_array($args)) {
 			$args = array($args);
@@ -75,10 +76,6 @@ function batch($function, $largs) {
 		}
 	}
 	unset($pubsub);
-	var_dump(array(
-		'name' => $context->name,
-		'context' => $context->dump()
-	));
 	$context->clean();
 	return array($results, $errors);
 }
@@ -102,6 +99,7 @@ function async_work() {
 			$msg = array('e', $e);
 		}
 		unset($_CONTEXT);
+		unset($_PID);
 		if(sizeof($data) >= 3) {
 			$_REDIS->publish("pid:$data[2]", serialize($msg));
 		}
