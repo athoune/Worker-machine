@@ -18,6 +18,9 @@ function batch($function, $largs) {
 	global $_REDIS;
 	$pid = uniqid();//[TODO] uuid later?
 	foreach($largs as $args) {
+		if(! is_array($args)) {
+			$args = array($args);
+		}
 		$_REDIS->lpush('queue', serialize(array($function, $args, $pid)));
 	}
 	$pubsub = $_REDIS->pubSubContext();
