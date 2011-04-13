@@ -1,7 +1,7 @@
 <?php
 require 'lib/worker.php';
 
-function map($url) {
+function getTitle($url) {
 	echo "$url\n";
 	$html = file_get_contents("http://$url");
 	preg_match('/<title>(.*)<\/title>/i', $html, $matches);
@@ -9,7 +9,9 @@ function map($url) {
 }
 
 if($argv[1] == '--mapreduce') {
-	$titles = batch('map', array('linuxfr.org', 'www.slashdot.org', 'www.boingboing.net', 'www.rue89.com', 'blog.makezine.com'));
+	//map
+	$titles = batch('getTitle', array('linuxfr.org', 'www.slashdot.org', 'www.boingboing.net', 'www.rue89.com', 'blog.makezine.com'));
+	//reduce
 	sort($titles);
 	var_dump($titles);
 }
