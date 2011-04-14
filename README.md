@@ -8,10 +8,10 @@ For now, it's just a POC.
 Why should I use this?
 ----------------------
 
- * You wont to launch task without waiting for the result
- * You wont to do heavy stuff, using all your CPU, even all your server
- * You wont to handle async events, like xmpp connection
- * You wont to try Redis
+ * You want to launch task without waiting for the result
+ * You want to do heavy stuff, using all your CPU, even all your server
+ * You want to handle async events, like xmpp connection
+ * You want to try Redis
 
 Testing it
 ----------
