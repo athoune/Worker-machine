@@ -40,6 +40,17 @@ And one client:
 
 	php  test_mapreduce.php --mapreduce
 
+API
+---
+
+The pattern is classical : a pool of worker, event is sent via a Redis list, with function name and serialized arguments.
+Response and error came back with a Redis pubsub.
+
+Some magical global variables is provided :
+
+ * **$\_PID**, the id of the batch.
+ * **$\_CONTEXT**, a Redis hash for sharing stuff in a batch.
+
 Features and todo
 -----------------
 
@@ -47,7 +58,7 @@ Features and todo
  * √ Map-reduce
  * _ Multiple queue
  * _ Watching worker with something like [Launchtool](http://people.debian.org/~enrico/launchtool.html)
- * _ Handling errors
+ * √ Handling errors
  * _ XMPP example
  * _ http frontend
  * _ metrics
