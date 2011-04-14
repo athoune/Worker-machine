@@ -8,8 +8,8 @@ For now, it's just a POC.
 Why should I use this?
 ----------------------
 
- * You want to launch task without waiting for the result
- * You want to do heavy stuff, using all your CPU, even all your server
+ * You want to launch a task without waiting for the result
+ * You want to do heavy stuff, using all your CPUs, even all your servers
  * You want to handle async events, like xmpp connection
  * You want to try Redis
 
@@ -43,8 +43,14 @@ And one client:
 API
 ---
 
-The pattern is classical : a pool of worker, event is sent via a Redis list, with function name and serialized arguments.
-Response and error came back with a Redis pubsub.
+The pattern is the classical [map-reduce](http://en.wikipedia.org/wiki/MapReduce) : 
+
+You've got a pool of workers, dispatched between cpu cores, or even in different servers.
+The main application send events via a Redis list, with function name and serialized arguments.
+Worker use infinite loop, when its job is finished, it poll the task list, waiting for a new job.
+Responses and errors came back with a Redis pubsub.
+
+![Big picture](https://github.com/athoune/Worker-machine/raw/master/mapreduce.png)
 
 Some magical global variables is provided :
 
