@@ -22,7 +22,11 @@ if($argv[1] == '--mapreduce') {
 		'www.boingboing.net',
 		'www.rue89.com',
 		'blog.makezine.com',
-		'toto.com'
+		'toto.com',
+		'www.4chan.org',
+		'news.ycombinator.com',
+		'danstonchat.com',
+		'freshmeat.net'
 	));
 	//reduce
 	sort($titles);

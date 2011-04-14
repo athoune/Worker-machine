@@ -50,12 +50,17 @@ The main application send events via a Redis list, with function name and serial
 Worker use infinite loop, when its job is finished, it poll the task list, waiting for a new job.
 Responses and errors came back with a Redis pubsub.
 
-![Big picture](https://github.com/athoune/Worker-machine/raw/master/mapreduce.png)
-
 Some magical global variables is provided :
 
  * **$\_PID**, the id of the batch.
  * **$\_CONTEXT**, a Redis hash for sharing stuff in a batch.
+
+The big picture of the map reduce test.
+
+![Big picture](https://github.com/athoune/Worker-machine/raw/master/mapreduce.png)
+
+You don't have to wait for each http download sequentialy, you can parralelized and saving time.
+With 1 worker, 10 urls take 10 seconds, with 4 workers, it only take 3.7 seconds.
 
 Features and todo
 -----------------
