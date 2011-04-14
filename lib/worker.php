@@ -45,7 +45,7 @@ function async_call($function, $args) {
  */
 function batch($function, $largs) {
 	global $_REDIS;
-	$pid = uniqid();//[TODO] uuid later?
+	$pid = $_REDIS->incr('pid');
 	echo "pid: $pid\n";
 	foreach($largs as $args) {
 		if(! is_array($args)) {
@@ -80,6 +80,9 @@ function batch($function, $largs) {
 	return array($results, $errors);
 }
 
+function error_as_exception($errno, $errstr) {
+	throw new Exception($errstr);
+}
 /*
  * The job is done here
  */
@@ -87,6 +90,7 @@ function async_work() {
 	global $_REDIS;
 	global $_PID;
 	global $_CONTEXT;
+	set_error_handler('error_as_exception');
 	while(true) {
 		list($liste, $sdata) = $_REDIS->brpop('queue', 300);
 		$data = unserialize($sdata);
@@ -104,6 +108,7 @@ function async_work() {
 			$_REDIS->publish("pid:$data[2]", serialize($msg));
 		}
 	}
+	restore_error_handler();
 }
 
 if(sizeof($argv) && $argv[1] == '--worker') {
