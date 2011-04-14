@@ -27,5 +27,5 @@ if($argv[1] == '--mapreduce') {
 	//reduce
 	sort($titles);
 	var_dump($titles);
-	//var_dump($errors);
+	var_dump($errors);
 }
