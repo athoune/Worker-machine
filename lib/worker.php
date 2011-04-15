@@ -108,6 +108,6 @@ function async_work() {
 	restore_error_handler();
 }
 
-if(sizeof($argv) && $argv[1] == '--worker') {
+if(sizeof($argv) > 1 && $argv[1] == '--worker') {
 	async_work();
 }
