@@ -54,28 +54,25 @@ function batch($function, $largs) {
 		$_REDIS->lpush('queue', serialize(array($function, $args, $pid)));
 	}
 	$context = new Context($pid);
-	$pubsub = $_REDIS->pubSubContext();
-	$pubsub->subscribe("pid:$pid");
 	$results = array();
 	$cpt = sizeof($largs);
 	$errors = array();
-	foreach ($pubsub as $message) {
-		if($message->kind == 'message') {
-			$msg = unserialize($message->payload);
-			if($msg[0] == 'r') {
-				$results[] = $msg[1];
-			}
-			if($msg[0] == 'e') {
-				$errors[] = $msg[1];
-			}
-			$cpt --;
-			print $cpt;
-			if($cpt == 0) {
-				break;
-			}
+	while(true) {
+		list($liste, $sdata) = $_REDIS->brpop("pid:$pid", 300);
+		$msg = unserialize($sdata);
+		if($msg[0] == 'r') {
+			$results[] = $msg[1];
+		}
+		if($msg[0] == 'e') {
+			$errors[] = $msg[1];
+		}
+		$cpt --;
+		print $cpt;
+		if($cpt == 0) {
+			break;
 		}
 	}
-	unset($pubsub);
+	$_REDIS->del("pid:$pid");
 	$context->clean();
 	return array($results, $errors);
 }
@@ -90,7 +87,7 @@ function async_work() {
 	global $_REDIS;
 	global $_PID;
 	global $_CONTEXT;
-	set_error_handler('error_as_exception');
+	//set_error_handler('error_as_exception');
 	while(true) {
 		list($liste, $sdata) = $_REDIS->brpop('queue', 300);
 		$data = unserialize($sdata);
@@ -105,7 +102,7 @@ function async_work() {
 		unset($_CONTEXT);
 		unset($_PID);
 		if(sizeof($data) >= 3) {
-			$_REDIS->publish("pid:$data[2]", serialize($msg));
+			$_REDIS->lpush("pid:$data[2]", serialize($msg));
 		}
 	}
 	restore_error_handler();
