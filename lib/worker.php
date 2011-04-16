@@ -91,8 +91,10 @@ function async_work() {
 	while(true) {
 		list($liste, $sdata) = $_REDIS->brpop('queue', 300);
 		$data = unserialize($sdata);
-		$_PID = $data[2];
-		$_CONTEXT = new Context($_PID);
+		if(sizeof($data) > 2) {
+			$_PID = $data[2];
+			$_CONTEXT = new Context($_PID);
+		}
 		try {
 			$result = call_user_func_array($data[0], $data[1]);
 			$msg = array('r', $result);
@@ -100,8 +102,8 @@ function async_work() {
 			$msg = array('e', $e);
 		}
 		unset($_CONTEXT);
-		unset($_PID);
-		if(sizeof($data) >= 3) {
+		if(sizeof($data) > 2) {
+			unset($_PID);
 			$_REDIS->lpush("pid:$data[2]", serialize($msg));
 		}
 	}
