@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# VERY simple tool to launch a lot of workers
+# ./worker-start test_mapreduce.php
+
+for i in {1..25}
+do
+  php $1 --worker &
+done
