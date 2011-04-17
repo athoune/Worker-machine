@@ -34,11 +34,17 @@ Another test, the classic map/reduce, just like Google :
 
 Launch some workers:
 
-	php test_mapreduce.php --worker
+	./worker-start test_mapreduce.php
+
+_worker-start_ is a simple bash tool to launch and detach 25 workers.
 
 And one client:
 
 	php  test_mapreduce.php --mapreduce
+
+Don't forget to kill them all, when your test is finished
+
+	killall php
 
 API
 ---
