@@ -90,21 +90,24 @@ function async_work() {
 	//set_error_handler('error_as_exception');
 	while(true) {
 		list($liste, $sdata) = $_REDIS->brpop('queue', 300);
-		$data = unserialize($sdata);
-		if(sizeof($data) > 2) {
-			$_PID = $data[2];
-			$_CONTEXT = new Context($_PID);
-		}
-		try {
-			$result = call_user_func_array($data[0], $data[1]);
-			$msg = array('r', $result);
-		} catch( Exception $e) {
-			$msg = array('e', $e);
-		}
-		unset($_CONTEXT);
-		if(sizeof($data) > 2) {
-			unset($_PID);
-			$_REDIS->lpush("pid:$data[2]", serialize($msg));
+		if($sdata != NULL) {
+			$data = unserialize($sdata);
+			if(sizeof($data) > 2) {
+				$_PID = $data[2];
+				$_CONTEXT = new Context($_PID);
+			}
+			try {
+				//var_dump($sdata);
+				$result = call_user_func_array($data[0], $data[1]);
+				$msg = array('r', $result);
+			} catch( Exception $e) {
+				$msg = array('e', $e);
+			}
+			unset($_CONTEXT);
+			if(sizeof($data) > 2) {
+				unset($_PID);
+				$_REDIS->lpush("pid:$data[2]", serialize($msg));
+			}
 		}
 	}
 	restore_error_handler();
