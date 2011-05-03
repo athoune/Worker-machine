@@ -2,16 +2,12 @@
 require 'lib/worker.php';
 
 function getTitle($url) {
-	global $_PID;
-	global $_CONTEXT;
-	echo "$_PID: $url\n";
 	$html = file_get_contents("http://$url");
 	if($html == FALSE) {
 		throw new Exception("can't fetch url");
 	}
-	//$_CONTEXT->set($url, $html);
 	preg_match('/<title>(.*)<\/title>/i', $html, $matches);
-	return $matches[1];
+	return html_entity_decode($matches[1]);
 }
 
 if($argv[1] == '--mapreduce') {
@@ -25,16 +21,10 @@ if($argv[1] == '--mapreduce') {
 		'www.4chan.org',
 		'news.ycombinator.com',
 		'danstonchat.com',
-		'freshmeat.net'
+		'freshmeat.net',
+		'www.flickr.com'
 	);
-	$worker = new Worker(new Predis_Client(
-		array(
-			'host' => '127.0.0.1',
-			'port' => 6379,
-			'read_write_timeout' => -1
-			)
-		)
-	);
+	$worker = new Worker();
 
 	//map
 	$n = 0;

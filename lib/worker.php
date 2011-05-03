@@ -2,7 +2,15 @@
 require 'Predis.php';
 
 class Worker {
-	function __construct($predis) {
+	function __construct($predis = null) {
+		if($predis == null)
+			$predis = new Predis_Client(
+		array(
+			'host' => '127.0.0.1',
+			'port' => 6379,
+			'read_write_timeout' => -1
+			)
+		);
 		$this->predis = $predis;
 	}
 	/**
@@ -51,10 +59,10 @@ class Worker {
 
 abstract class Task {
 	protected $context;
-	protected $pid;
+	protected $taskid;
 	
-	function __construct($pid) {
-		$this->context = new Context($pid);
+	function __construct($taskid) {
+		$this->context = new Context($taskid);
 	}
 	abstract function run();
 }
@@ -135,13 +143,6 @@ function error_as_exception($errno, $errstr) {
 }
 
 if(sizeof($argv) > 1 && $argv[1] == '--worker') {
-	$worker = new Worker(new Predis_Client(
-		array(
-			'host' => '127.0.0.1',
-			'port' => 6379,
-			'read_write_timeout' => -1
-			)
-		)
-	);
+	$worker = new Worker();
 	$worker->async_work();
 }
