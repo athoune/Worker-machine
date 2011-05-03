@@ -28,7 +28,13 @@ if($argv[1] == '--mapreduce') {
 		'freshmeat.net'
 	);
 	//map
-	foreach(new Batch('getTitle', $sites) as $title) {
-		var_dump($title);
+	$n = 0;
+	try {
+		foreach(new Batch('getTitle', $sites) as $title) {
+			echo $n++;
+			echo " $title\n";
+		}
+	} catch(Exception $e) {
+		echo 'Exception : ' . $e->getMessage() . "\n";
 	}
 }

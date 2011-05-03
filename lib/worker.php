@@ -102,6 +102,10 @@ class Batch implements Iterator {
 		for($a = sizeof($this->results); $a <= $this->position; $a++) {
 			list($liste, $sdata) = $_REDIS->brpop("pid:$pid", 300);
 			$msg = unserialize($sdata);
+			if($msg[0] == 'e') {
+				$this->results[] = null;
+				throw $msg[1];
+			}
 			$this->results[] = $msg[1];
 		}
 		return $this->results[$this->position];
