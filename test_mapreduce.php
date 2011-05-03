@@ -25,10 +25,12 @@ if($argv[1] == '--mapreduce') {
 		'www.flickr.com'
 	);
 	$worker = new Worker();
-
+	$onError = function($e) {
+		echo "oups " . $e->getMessage() . "\n";
+	};
 	//map
 	$n = 0;
-	foreach($worker->batch('getTitle', $sites, function($e) { echo "oups " . $e->getMessage() . "\n";}) as $title) {
+	foreach($worker->batch('getTitle', $sites, $onError) as $title) {
 		echo $n++;
 		echo " $title\n";
 	}
