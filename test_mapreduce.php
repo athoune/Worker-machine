@@ -15,8 +15,7 @@ function getTitle($url) {
 }
 
 if($argv[1] == '--mapreduce') {
-	//map
-	list($titles, $errors) = batch('getTitle', array(
+	$sites = array(
 		'linuxfr.org',
 		'www.slashdot.org',
 		'www.boingboing.net',
@@ -27,9 +26,9 @@ if($argv[1] == '--mapreduce') {
 		'news.ycombinator.com',
 		'danstonchat.com',
 		'freshmeat.net'
-	));
-	//reduce
-	sort($titles);
-	var_dump($titles);
-	var_dump($errors);
+	);
+	//map
+	foreach(new Batch('getTitle', $sites) as $title) {
+		var_dump($title);
+	}
 }

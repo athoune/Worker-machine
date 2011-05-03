@@ -77,6 +77,46 @@ function batch($function, $largs) {
 	return array($results, $errors);
 }
 
+class Batch implements Iterator {
+	private $position = 0;
+	private $results = array();
+	function __construct($function, $largs) {
+		global $_REDIS;
+		$this->pid = $_REDIS->incr('pid');
+		echo "pid: $this->pid\n";
+		foreach($largs as $args) {
+			if(! is_array($args)) {
+				$args = array($args);
+			}
+			$_REDIS->lpush('queue', serialize(array($function, $args, $pid)));
+		}
+		$this->context = new Context($pid);
+		$this->results = array();
+		$this->cpt = sizeof($largs);
+	}
+	public function rewind() {
+		$this->position = 0;
+	}
+	public function current() {
+		global $_REDIS;
+		for($a = sizeof($this->results); $a <= $this->position; $a++) {
+			list($liste, $sdata) = $_REDIS->brpop("pid:$pid", 300);
+			$msg = unserialize($sdata);
+			$this->results[] = $msg[1];
+		}
+		return $this->results[$this->position];
+	}
+	public function key() {
+		return $this->position;
+	}
+	public function next() {
+		++$this->position;
+	}
+	public function valid() {
+		return $this->position < $this->cpt;
+	}
+}
+
 function error_as_exception($errno, $errstr) {
 	throw new Exception($errstr);
 }
