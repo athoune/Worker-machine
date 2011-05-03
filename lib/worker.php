@@ -127,9 +127,10 @@ function async_work() {
 	global $_REDIS;
 	global $_PID;
 	global $_CONTEXT;
+	$posix_pid = posix_getpid();
 	//set_error_handler('error_as_exception');
 	while(true) {
-		list($liste, $sdata) = $_REDIS->brpop('queue', 300);
+		list($liste, $sdata) = $_REDIS->brpop("posix_pid:$posix_pid", 'queue', 300);
 		if($sdata != NULL) {
 			$data = unserialize($sdata);
 			if(sizeof($data) > 2) {
