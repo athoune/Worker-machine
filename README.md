@@ -63,7 +63,37 @@ The big picture of the map reduce test.
 You don't have to wait for each http download sequentialy, you can parralelized and saving time.
 With 1 worker, 10 urls take 10 seconds, with 4 workers, it only take 3.7 seconds.
 
-<script src="https://gist.github.com/954308.js?file=gistfile1.php"></script>
+````php
+require 'lib/worker.php';
+
+function getTitle($url) {
+	$html = file_get_contents("http://$url");
+	if($html == FALSE) {
+		throw new Exception("can't fetch url");
+	}
+	preg_match('/<title>(.*)<\/title>/i', $html, $matches);
+	return html_entity_decode($matches[1]);
+}
+
+if($argv[1] == '--mapreduce') {
+	$sites = array(
+		'linuxfr.org',
+		'www.slashdot.org',
+		'www.boingboing.net',
+		'www.rue89.com',
+		'blog.makezine.com',
+		'www.4chan.org',
+		'news.ycombinator.com',
+		'danstonchat.com',
+		'freshmeat.net',
+		'www.flickr.com'
+	);
+	$worker = new Worker();
+	foreach($worker->batch('getTitle', $sites) as $title) {
+		echo " $title\n";
+	}
+}
+```
 
 Features and todo
 -----------------
