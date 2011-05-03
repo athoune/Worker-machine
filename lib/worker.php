@@ -49,14 +49,6 @@ class Worker {
 	}
 }
 
-$_REDIS = new Predis_Client(
-	array(
-		'host' => '127.0.0.1',
-		'port' => 6379,
-		'read_write_timeout' => -1
-		)
-	);
-
 abstract class Task {
 	protected $context;
 	protected $pid;
@@ -88,44 +80,6 @@ class Context {
 		global $_REDIS;
 		return $_REDIS->hvals($this->name);
 	}
-}
-
-/**
- * Async call a function with a list of arguments, and return the result
- * It's the map part of map-reduce
- */
-function batch($function, $largs) {
-	global $_REDIS;
-	$pid = $_REDIS->incr('pid');
-	echo "pid: $pid\n";
-	foreach($largs as $args) {
-		if(! is_array($args)) {
-			$args = array($args);
-		}
-		$_REDIS->lpush('queue', serialize(array($function, $args, $pid)));
-	}
-	$context = new Context($pid);
-	$results = array();
-	$cpt = sizeof($largs);
-	$errors = array();
-	while(true) {
-		list($liste, $sdata) = $_REDIS->brpop("pid:$pid", 300);
-		$msg = unserialize($sdata);
-		if($msg[0] == 'r') {
-			$results[] = $msg[1];
-		}
-		if($msg[0] == 'e') {
-			$errors[] = $msg[1];
-		}
-		$cpt --;
-		print $cpt;
-		if($cpt == 0) {
-			break;
-		}
-	}
-	$_REDIS->del("pid:$pid");
-	$context->clean();
-	return array($results, $errors);
 }
 
 class Batch implements Iterator {
@@ -160,8 +114,8 @@ class Batch implements Iterator {
 					$err($msg[1]);
 				} else
 					throw $msg[1];
-			}
-			$this->results[] = $msg[1];
+			} else
+				$this->results[] = $msg[1];
 		}
 		return $this->results[$this->position];
 	}
