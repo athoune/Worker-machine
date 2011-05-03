@@ -54,12 +54,7 @@ The pattern is the classical [map-reduce](http://en.wikipedia.org/wiki/MapReduce
 You've got a pool of workers, dispatched between cpu cores, or even in different servers.
 The main application send events via a Redis list, with function name and serialized arguments.
 Worker use infinite loop, when its job is finished, it poll the task list, waiting for a new job.
-Responses and errors came back with a Redis pubsub.
-
-Some magical global variables is provided :
-
- * **$\_PID**, the id of the batch.
- * **$\_CONTEXT**, a Redis hash for sharing stuff in a batch.
+Responses and errors came back with a Redis list.
 
 The big picture of the map reduce test.
 
@@ -67,6 +62,8 @@ The big picture of the map reduce test.
 
 You don't have to wait for each http download sequentialy, you can parralelized and saving time.
 With 1 worker, 10 urls take 10 seconds, with 4 workers, it only take 3.7 seconds.
+
+<script src="https://gist.github.com/954308.js?file=gistfile1.php"></script>
 
 Features and todo
 -----------------
