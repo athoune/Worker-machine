@@ -9,7 +9,7 @@ function getTitle($url) {
 	if($html == FALSE) {
 		throw new Exception("can't fetch url");
 	}
-	$_CONTEXT->set($url, $html);
+	//$_CONTEXT->set($url, $html);
 	preg_match('/<title>(.*)<\/title>/i', $html, $matches);
 	return $matches[1];
 }
@@ -27,14 +27,19 @@ if($argv[1] == '--mapreduce') {
 		'danstonchat.com',
 		'freshmeat.net'
 	);
+	$worker = new Worker(new Predis_Client(
+		array(
+			'host' => '127.0.0.1',
+			'port' => 6379,
+			'read_write_timeout' => -1
+			)
+		)
+	);
+
 	//map
 	$n = 0;
-	try {
-		foreach(new Batch('getTitle', $sites) as $title) {
-			echo $n++;
-			echo " $title\n";
-		}
-	} catch(Exception $e) {
-		echo 'Exception : ' . $e->getMessage() . "\n";
+	foreach($worker->batch('getTitle', $sites, function($e) { echo "oups " . $e->getMessage() . "\n";}) as $title) {
+		echo $n++;
+		echo " $title\n";
 	}
 }
