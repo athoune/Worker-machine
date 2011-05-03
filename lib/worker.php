@@ -46,9 +46,7 @@ class Worker {
 				} catch( Exception $e) {
 					$msg = array('e', $e);
 				}
-				unset($_CONTEXT);
 				if(sizeof($data) > 2) {
-					unset($_PID);
 					$this->predis->lpush("pid:$data[2]", serialize($msg));
 				}
 			}
@@ -97,12 +95,11 @@ class Batch implements Iterator {
 		$this->predis = $predis;
 		$this->onError = $onError;
 		$this->pid = $this->predis->incr('pid');
-		echo "pid: $this->pid\n";
 		foreach($largs as $args) {
 			if(! is_array($args)) {
 				$args = array($args);
 			}
-			$this->predis->lpush('queue', serialize(array($function, $args, $pid)));
+			$this->predis->lpush('queue', serialize(array($function, $args, $this->pid)));
 		}
 		$this->context = new Context($pid);
 		$this->results = array();
@@ -113,7 +110,7 @@ class Batch implements Iterator {
 	}
 	public function current() {
 		for($a = sizeof($this->results); $a <= $this->position; $a++) {
-			list($liste, $sdata) = $this->predis->brpop("pid:$pid", 300);
+			list($liste, $sdata) = $this->predis->brpop("pid:$this->pid", 300);
 			$msg = unserialize($sdata);
 			if($msg[0] == 'e') {
 				$this->results[] = null;
